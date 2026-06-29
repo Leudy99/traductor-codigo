@@ -1,0 +1,215 @@
+/* ============================================================
+   styles.css - Estilos de ConsultaLang Web Translator
+   Tema moderno tipo playground: tarjetas, sombras suaves,
+   bordes redondeados y diseno responsive.
+   ============================================================ */
+
+:root {
+    --fondo:        #0f172a;   /* azul muy oscuro */
+    --fondo-card:   #1e293b;
+    --borde:        #334155;
+    --texto:        #e2e8f0;
+    --texto-suave:  #94a3b8;
+    --primario:     #6366f1;
+    --primario-hov: #4f46e5;
+    --ok:           #22c55e;
+    --error:        #ef4444;
+    --warn:         #f59e0b;
+    --radio:        14px;
+    --sombra:       0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+/* ---------- Barra superior (plana, estilo editor) ---------- */
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 20px;
+    background: var(--fondo-card);
+    border-bottom: 1px solid var(--borde);
+    flex-wrap: wrap;
+}
+.topbar-titulo {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--texto);
+    letter-spacing: 0.2px;
+}
+.topbar-controles {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ---------- Contenedor ---------- */
+.contenedor {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ---------- Tarjetas ---------- */
+.card {
+    background: var(--fondo-card);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    padding: 18px;
+    box-shadow: var(--sombra);
+}
+.panel-titulo {
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--texto-suave);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+select {
+    background: var(--fondo);
+    color: var(--texto);
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* ---------- Botones ---------- */
+.btn {
+    background: var(--fondo);
+    color: var(--texto);
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.btn:hover { border-color: var(--primario); transform: translateY(-1px); }
+.btn-primario {
+    background: var(--primario);
+    border-color: var(--primario);
+    color: #fff;
+    font-weight: 600;
+}
+.btn-primario:hover { background: var(--primario-hov); }
+
+/* ---------- Paneles entrada/salida ---------- */
+.paneles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.panel { display: flex; flex-direction: column; }
+
+textarea#entrada, .salida {
+    width: 100%;
+    min-height: 240px;
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 14px;
+    color: var(--texto);
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.95rem;
+    resize: none;
+}
+textarea#entrada:focus { outline: 2px solid var(--primario); border-color: transparent; }
+
+.salida {
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #7dd3fc;
+    overflow: auto;
+}
+
+/* ---------- Estados del analisis ---------- */
+.estados {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+.estado {
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.estado .etiqueta { color: var(--texto-suave); font-size: 0.8rem; }
+.estado .valor { font-weight: 600; font-size: 1.05rem; }
+.estado.ok    { border-color: var(--ok); }
+.estado.ok    .valor { color: var(--ok); }
+.estado.error { border-color: var(--error); }
+.estado.error .valor { color: var(--error); }
+.estado.idle  .valor { color: var(--texto-suave); }
+
+/* ---------- Mensajes ---------- */
+.mensajes { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.mensajes li {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    border-left: 4px solid;
+}
+.mensajes li.msg-error {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: var(--error);
+    color: #fca5a5;
+}
+.mensajes li.msg-warn {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: var(--warn);
+    color: #fcd34d;
+}
+
+/* ---------- Ayuda ---------- */
+.ayuda-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+.ayuda h4 { margin-bottom: 8px; color: var(--primario); font-size: 0.9rem; }
+.ayuda ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.ayuda li { font-size: 0.85rem; color: var(--texto-suave); }
+.ayuda code {
+    background: var(--fondo);
+    padding: 2px 6px;
+    border-radius: 5px;
+    color: #a5b4fc;
+    font-size: 0.82rem;
+}
+
+/* ---------- Footer ---------- */
+.footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--texto-suave);
+    font-size: 0.85rem;
+}
+
+/* ---------- Responsive (movil) ---------- */
+@media (max-width: 860px) {
+    .paneles { grid-template-columns: 1fr; }
+    .estados { grid-template-columns: repeat(2, 1fr); }
+    .ayuda-grid { grid-template-columns: 1fr; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+}

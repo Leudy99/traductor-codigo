@@ -1,0 +1,37 @@
+# ===== Binarios y objetos compilados =====
+consultalang
+consultalang.exe
+*.o
+*.obj
+*.exe
+
+# ===== Generados por FLEX / BISON =====
+src/lex.yy.c
+src/parser.tab.c
+src/parser.tab.h
+src/*.output
+
+# ===== Salidas y temporales del traductor =====
+output/salida.sql
+output/entrada_temp.cl
+*.cl.tmp
+t.cl
+test*.cl
+
+# ===== Python =====
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ===== Archivos internos (no publicar) =====
+CLAUDE.md
+CLAUDE.MD
+TASK_CONSULTALANG.md
+
+# ===== Editor / sistema =====
+.vscode/
+.idea/
+.claude/
+.DS_Store
+Thumbs.db

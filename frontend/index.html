@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConsultaLang Web Translator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ============ Barra superior ============ -->
+    <header class="topbar">
+        <div class="topbar-titulo">ConsultaLang — Traductor a SQL</div>
+        <div class="topbar-controles">
+            <select id="ejemplos" title="Cargar ejemplo">
+                <option value="">Ejemplos…</option>
+                <option value="select">SELECT con WHERE</option>
+                <option value="completo">SELECT completo</option>
+                <option value="insert">INSERT</option>
+                <option value="update">UPDATE</option>
+                <option value="delete">DELETE</option>
+                <option value="create">CREATE TABLE</option>
+            </select>
+            <button id="btn-limpiar" class="btn">Limpiar</button>
+            <button id="btn-traducir" class="btn btn-primario">Traducir</button>
+        </div>
+    </header>
+
+    <main class="contenedor">
+        <!-- ============ Paneles entrada / salida ============ -->
+        <section class="paneles">
+            <div class="card panel">
+                <div class="panel-titulo">Entrada ConsultaLang</div>
+                <textarea id="entrada" spellcheck="false"
+                    placeholder="obtener nombre, edad desde clientes donde edad >= 18;"></textarea>
+            </div>
+
+            <div class="card panel">
+                <div class="panel-titulo">Salida SQL</div>
+                <pre id="salida" class="salida">El SQL traducido aparecerá aquí.</pre>
+            </div>
+        </section>
+
+        <!-- ============ Estado del análisis ============ -->
+        <section class="card">
+            <div class="panel-titulo">Estado del análisis</div>
+            <div class="estados">
+                <div class="estado" id="estado-lexico">
+                    <span class="etiqueta">Léxico</span>
+                    <span class="valor">—</span>
+                </div>
+                <div class="estado" id="estado-sintactico">
+                    <span class="etiqueta">Sintáctico</span>
+                    <span class="valor">—</span>
+                </div>
+                <div class="estado" id="estado-semantico">
+                    <span class="etiqueta">Semántico</span>
+                    <span class="valor">—</span>
+                </div>
+                <div class="estado" id="estado-traduccion">
+                    <span class="etiqueta">Traducción</span>
+                    <span class="valor">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ Errores y advertencias ============ -->
+        <section class="card" id="seccion-mensajes" style="display:none;">
+            <div class="panel-titulo">Errores y advertencias</div>
+            <ul id="lista-mensajes" class="mensajes"></ul>
+        </section>
+
+        <!-- ============ Ayuda de sintaxis ============ -->
+        <section class="card ayuda">
+            <div class="panel-titulo">Sintaxis aceptada</div>
+            <div class="ayuda-grid">
+                <div>
+                    <h4>Palabras equivalentes</h4>
+                    <ul>
+                        <li><code>obtener / seleccionar / listar / traer</code> → SELECT</li>
+                        <li><code>desde / de / en</code> → FROM</li>
+                        <li><code>donde / cuando / con</code> → WHERE</li>
+                        <li><code>y / o</code> → AND / OR</li>
+                        <li><code>ordenar por</code> → ORDER BY</li>
+                        <li><code>ascendente / descendente</code> → ASC / DESC</li>
+                        <li><code>limite</code> → LIMIT</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Instrucciones</h4>
+                    <ul>
+                        <li><code>insertar / agregar</code> → INSERT</li>
+                        <li><code>actualizar / modificar</code> → UPDATE</li>
+                        <li><code>establecer / poner</code> → SET</li>
+                        <li><code>eliminar / borrar</code> → DELETE</li>
+                        <li><code>crear tabla</code> → CREATE TABLE</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Tipos y valores</h4>
+                    <ul>
+                        <li><code>entero / texto / decimal / fecha / booleano</code></li>
+                        <li><code>primario / obligatorio / unico</code></li>
+                        <li><code>verdadero / falso</code> → TRUE / FALSE</li>
+                        <li>Operadores: <code>= != &lt; &gt; &lt;= &gt;=</code></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        ConsultaLang Web Translator · Proyecto de Compiladores (FLEX · BISON · C · Flask)
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
