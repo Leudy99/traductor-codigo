@@ -16,6 +16,7 @@
 #include "errores.h"
 #include "semantica.h"
 #include "generador.h"
+#include "optimizador.h"
 
 extern int yyparse(void);
 extern FILE *yyin;
@@ -78,7 +79,8 @@ int main(int argc, char **argv) {
 
     int pr = yyparse();
 
-    char *sql = NULL;
+    char *sql = NULL;         /* SQL bruto (generado)   */
+    char *sql_opt = NULL;     /* SQL optimizado         */
 
     if (reporte.lexico == 0) {
         /* Error lexico: las fases siguientes no se ejecutan */
@@ -96,9 +98,10 @@ int main(int argc, char **argv) {
         int sem = analizar_semantica(raiz);
         if (sem == 0) {
             reporte.semantico = 1;
-            sql = generar_sql(raiz);
+            sql = generar_sql(raiz);          /* SQL bruto */
+            sql_opt = optimizar_sql(sql);     /* fase de optimizacion */
             reporte.traduccion = 1;
-            guardar_sql(sql);
+            guardar_sql(sql_opt);             /* se guarda el optimizado */
         } else {
             reporte.semantico = 0;
             reporte.traduccion = -1;
@@ -113,8 +116,18 @@ int main(int argc, char **argv) {
     fputs("{", out);
     fprintf(out, "\"success\":%s,", success ? "true" : "false");
 
+    /* "sql" = SQL final (optimizado) para compatibilidad con el frontend */
     fputs("\"sql\":", out);
+    json_str(out, sql_opt ? sql_opt : "");
+    fputs(",", out);
+
+    /* Campos de la fase de optimizacion */
+    fputs("\"sql_bruto\":", out);
     json_str(out, sql ? sql : "");
+    fputs(",", out);
+
+    fputs("\"sql_optimizado\":", out);
+    json_str(out, sql_opt ? sql_opt : "");
     fputs(",", out);
 
     fprintf(out, "\"lexico\":\"%s\",",     estado_txt(reporte.lexico));
@@ -128,10 +141,19 @@ int main(int argc, char **argv) {
 
     fputs("\"advertencias\":", out);
     json_array(out, reporte.advertencias, reporte.nadvertencias);
+    fputs(",", out);
+
+    fputs("\"optimizaciones_aplicadas\":", out);
+    json_array(out, reporte.optimizaciones, reporte.noptimizaciones);
+    fputs(",", out);
+
+    fputs("\"advertencias_optimizador\":", out);
+    json_array(out, reporte.adv_optimizador, reporte.nadv_optimizador);
 
     fputs("}\n", out);
 
     if (sql) free(sql);
+    if (sql_opt) free(sql_opt);
     if (yyin && yyin != stdin) fclose(yyin);
     return success ? 0 : 0;   /* siempre 0: el backend lee el JSON */
 }

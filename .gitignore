@@ -35,3 +35,4 @@ TASK_CONSULTALANG.md
 .claude/
 .DS_Store
 Thumbs.db
+*.txt

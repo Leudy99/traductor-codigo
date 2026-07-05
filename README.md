@@ -17,7 +17,7 @@ el resultado de cada fase del análisis (léxico, sintáctico, semántico y trad
 Demostrar de forma clara y educativa el flujo completo de un traductor:
 
 ```txt
-Entrada → Léxico (FLEX) → Sintáctico (BISON) → Semántico (C) → Traducción → Salida SQL
+Entrada → Léxico (FLEX) → Sintáctico (BISON) → Semántico (C) → Generación SQL bruto → Optimización → SQL optimizado
 ```
 
 ## 3. Tecnologías
@@ -36,8 +36,8 @@ Entrada → Léxico (FLEX) → Sintáctico (BISON) → Semántico (C) → Traduc
 traductor-codigo
 ├── frontend/   index.html, styles.css, app.js
 ├── backend/    server.py
-├── src/        lexer.l, parser.y, ast.*, errores.*, semantica.*, generador.*, main.c
-├── docs/       LENGUAJE, GRAMATICA, SEMANTICA, TRADUCCION, MANUAL_USUARIO
+├── src/        lexer.l, parser.y, ast.*, errores.*, semantica.*, generador.*, optimizador.*, main.c
+├── docs/       LENGUAJE, GRAMATICA, SEMANTICA, TRADUCCION, OPTIMIZACION, MANUAL_USUARIO
 ├── ejemplos/   select.cl, insert.cl, update.cl, delete.cl, create_table.cl
 ├── output/     salida.sql (generado)
 ├── Makefile

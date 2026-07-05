@@ -22,6 +22,13 @@ typedef struct {
 
     char advertencias[MAX_MSGS][MAX_LEN];
     int  nadvertencias;
+
+    /* Fase de optimizacion */
+    char optimizaciones[MAX_MSGS][MAX_LEN];
+    int  noptimizaciones;
+
+    char adv_optimizador[MAX_MSGS][MAX_LEN];
+    int  nadv_optimizador;
 } Reporte;
 
 extern Reporte reporte;
@@ -29,5 +36,7 @@ extern Reporte reporte;
 void reporte_init(void);
 void agregar_error(const char *fmt, ...);
 void agregar_advertencia(const char *fmt, ...);
+void agregar_optimizacion(const char *fmt, ...);
+void agregar_adv_optimizador(const char *fmt, ...);
 
 #endif /* ERRORES_H */

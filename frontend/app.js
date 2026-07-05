@@ -21,6 +21,12 @@ const EJEMPLOS = {
         'eliminar de clientes donde id = 10;',
     create:
         'crear tabla clientes {\n    id entero primario;\n    nombre texto obligatorio;\n    edad entero;\n    correo texto unico;\n}',
+    opt_repetida:
+        'obtener nombre desde clientes donde estado = "activo" y estado = "activo";',
+    opt_or_in:
+        'obtener nombre, correo desde clientes donde estado = "activo" o estado = "pendiente" o estado = "suspendido";',
+    opt_contra:
+        'obtener nombre desde empleados donde edad >= 65 y edad <= 18;',
 };
 
 // ----- Referencias del DOM -----
@@ -29,6 +35,10 @@ const $salida      = document.getElementById("salida");
 const $ejemplos    = document.getElementById("ejemplos");
 const $mensajes    = document.getElementById("lista-mensajes");
 const $seccionMsg  = document.getElementById("seccion-mensajes");
+const $seccionOpt  = document.getElementById("seccion-optim");
+const $sqlBruto    = document.getElementById("sql-bruto");
+const $sqlOptim    = document.getElementById("sql-optim");
+const $listaOptim  = document.getElementById("lista-optim");
 
 const FASES = ["lexico", "sintactico", "semantico", "traduccion"];
 
@@ -64,6 +74,45 @@ function pintarMensajes(errores, advertencias) {
     });
 }
 
+// ----- Muestra la fase de optimización -----
+function pintarOptim(data) {
+    const aplicadas = data.optimizaciones_aplicadas || [];
+    const advOpt = data.advertencias_optimizador || [];
+    const bruto = data.sql_bruto || "";
+    const optim = data.sql_optimizado || "";
+
+    // Solo se muestra si hay algo que optimizar o reportar
+    const hayCambio = bruto && optim && bruto !== optim;
+    if (!hayCambio && aplicadas.length === 0 && advOpt.length === 0) {
+        $seccionOpt.style.display = "none";
+        return;
+    }
+
+    $seccionOpt.style.display = "block";
+    $sqlBruto.textContent = bruto || "(sin SQL)";
+    $sqlOptim.textContent = optim || "(sin SQL)";
+
+    $listaOptim.innerHTML = "";
+    aplicadas.forEach((o) => {
+        const li = document.createElement("li");
+        li.className = "msg-ok";
+        li.textContent = "✓ " + o;
+        $listaOptim.appendChild(li);
+    });
+    advOpt.forEach((a) => {
+        const li = document.createElement("li");
+        li.className = "msg-warn";
+        li.textContent = "⚠️ " + a;
+        $listaOptim.appendChild(li);
+    });
+    if (aplicadas.length === 0 && advOpt.length === 0) {
+        const li = document.createElement("li");
+        li.className = "msg-ok";
+        li.textContent = "No se aplicaron optimizaciones (el SQL ya era óptimo).";
+        $listaOptim.appendChild(li);
+    }
+}
+
 // ----- Llama al backend y traduce -----
 async function traducir() {
     const code = $entrada.value;
@@ -91,6 +140,9 @@ async function traducir() {
 
         // Mensajes
         pintarMensajes(data.errores, data.advertencias);
+
+        // Optimización
+        pintarOptim(data);
     } catch (err) {
         $salida.textContent = "Error de conexión con el servidor.";
         FASES.forEach((f) => pintarEstado(f, "error"));
@@ -104,6 +156,7 @@ function limpiar() {
     $salida.textContent = "El SQL traducido aparecerá aquí.";
     FASES.forEach((f) => pintarEstado(f, "—"));
     pintarMensajes([], []);
+    $seccionOpt.style.display = "none";
     $ejemplos.value = "";
 }
 

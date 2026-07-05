@@ -180,6 +180,30 @@ textarea#entrada:focus { outline: 2px solid var(--primario); border-color: trans
     border-color: var(--warn);
     color: #fcd34d;
 }
+.mensajes li.msg-ok {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: var(--ok);
+    color: #86efac;
+}
+
+/* ---------- Optimización ---------- */
+.optim-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+.sub-titulo {
+    font-size: 0.75rem;
+    color: var(--texto-suave);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.optim-grid .salida { min-height: 90px; }
+@media (max-width: 860px) {
+    .optim-grid { grid-template-columns: 1fr; }
+}
 
 /* ---------- Ayuda ---------- */
 .ayuda-grid {

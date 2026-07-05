@@ -35,12 +35,16 @@ def respuesta_error(mensaje):
     return {
         "success": False,
         "sql": "",
+        "sql_bruto": "",
+        "sql_optimizado": "",
         "lexico": "no ejecutado",
         "sintactico": "no ejecutado",
         "semantico": "no ejecutado",
         "traduccion": "no ejecutado",
         "errores": [mensaje],
         "advertencias": [],
+        "optimizaciones_aplicadas": [],
+        "advertencias_optimizador": [],
     }
 
 

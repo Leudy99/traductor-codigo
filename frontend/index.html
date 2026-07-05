@@ -19,6 +19,9 @@
                 <option value="update">UPDATE</option>
                 <option value="delete">DELETE</option>
                 <option value="create">CREATE TABLE</option>
+                <option value="opt_repetida">Optimizar: condición repetida</option>
+                <option value="opt_or_in">Optimizar: OR → IN</option>
+                <option value="opt_contra">Optimizar: contradicción</option>
             </select>
             <button id="btn-limpiar" class="btn">Limpiar</button>
             <button id="btn-traducir" class="btn btn-primario">Traducir</button>
@@ -67,6 +70,22 @@
         <section class="card" id="seccion-mensajes" style="display:none;">
             <div class="panel-titulo">Errores y advertencias</div>
             <ul id="lista-mensajes" class="mensajes"></ul>
+        </section>
+
+        <!-- ============ Optimización de código ============ -->
+        <section class="card" id="seccion-optim" style="display:none;">
+            <div class="panel-titulo">Optimización de código</div>
+            <div class="optim-grid">
+                <div>
+                    <div class="sub-titulo">SQL bruto (antes)</div>
+                    <pre id="sql-bruto" class="salida"></pre>
+                </div>
+                <div>
+                    <div class="sub-titulo">SQL optimizado (después)</div>
+                    <pre id="sql-optim" class="salida"></pre>
+                </div>
+            </div>
+            <ul id="lista-optim" class="mensajes"></ul>
         </section>
 
         <!-- ============ Ayuda de sintaxis ============ -->
