@@ -45,6 +45,7 @@ def respuesta_error(mensaje):
         "advertencias": [],
         "optimizaciones_aplicadas": [],
         "advertencias_optimizador": [],
+        "codigo_destino": [],
     }
 
 

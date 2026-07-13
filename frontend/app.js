@@ -27,6 +27,28 @@ const EJEMPLOS = {
         'obtener nombre, correo desde clientes donde estado = "activo" o estado = "pendiente" o estado = "suspendido";',
     opt_contra:
         'obtener nombre desde empleados donde edad >= 65 y edad <= 18;',
+    join:
+        'obtener c.nombre, v.total desde clientes c unir ventas v en c.id = v.id_cliente donde v.total > 1000;',
+    join_left:
+        'obtener c.nombre, v.total desde clientes c unir por izquierda ventas v en c.id = v.id_cliente;',
+    distinct:
+        'obtener distinto nombre desde clientes;',
+    agrupar:
+        'obtener estado, contar(*) desde clientes agrupar por estado teniendo contar(*) > 5;',
+    entre:
+        'obtener nombre, edad desde clientes donde edad entre 18 y 30 ordenar por edad descendente;',
+    in:
+        'obtener nombre desde clientes donde estado en ("activo", "pendiente");',
+    like:
+        'obtener nombre desde clientes donde nombre como "Juan%";',
+    isnull:
+        'obtener nombre desde clientes donde correo no es nulo;',
+    crear_par:
+        'crear tabla clientes (\n    id entero clave primaria,\n    nombre texto no nulo,\n    edad entero,\n    correo texto unico\n);',
+    alterar:
+        'alterar tabla clientes agregar telefono texto;',
+    drop:
+        'eliminar tabla clientes;',
 };
 
 // ----- Referencias del DOM -----
@@ -39,6 +61,8 @@ const $seccionOpt  = document.getElementById("seccion-optim");
 const $sqlBruto    = document.getElementById("sql-bruto");
 const $sqlOptim    = document.getElementById("sql-optim");
 const $listaOptim  = document.getElementById("lista-optim");
+const $seccionDest = document.getElementById("seccion-destino");
+const $destLista   = document.getElementById("destino-lista");
 
 const FASES = ["lexico", "sintactico", "semantico", "traduccion"];
 
@@ -113,6 +137,36 @@ function pintarOptim(data) {
     }
 }
 
+// ----- Muestra el código destino final (los 4 dialectos) -----
+function pintarDestino(data) {
+    const lista = data.codigo_destino || [];
+    if (lista.length === 0) { $seccionDest.style.display = "none"; return; }
+    $seccionDest.style.display = "block";
+    $destLista.innerHTML = "";
+    lista.forEach((d) => {
+        const bloque = document.createElement("div");
+        bloque.className = "destino-item";
+
+        const titulo = document.createElement("div");
+        titulo.className = "sub-titulo";
+        titulo.textContent = d.dialecto;
+        bloque.appendChild(titulo);
+
+        const pre = document.createElement("pre");
+        pre.className = "salida";
+        pre.textContent = d.sql || "(sin SQL)";
+        bloque.appendChild(pre);
+
+        (d.advertencias || []).forEach((a) => {
+            const nota = document.createElement("div");
+            nota.className = "destino-nota";
+            nota.textContent = "⚠️ " + a;
+            bloque.appendChild(nota);
+        });
+        $destLista.appendChild(bloque);
+    });
+}
+
 // ----- Llama al backend y traduce -----
 async function traducir() {
     const code = $entrada.value;
@@ -143,6 +197,9 @@ async function traducir() {
 
         // Optimización
         pintarOptim(data);
+
+        // Código destino
+        pintarDestino(data);
     } catch (err) {
         $salida.textContent = "Error de conexión con el servidor.";
         FASES.forEach((f) => pintarEstado(f, "error"));
@@ -157,6 +214,7 @@ function limpiar() {
     FASES.forEach((f) => pintarEstado(f, "—"));
     pintarMensajes([], []);
     $seccionOpt.style.display = "none";
+    $seccionDest.style.display = "none";
     $ejemplos.value = "";
 }
 

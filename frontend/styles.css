@@ -205,6 +205,16 @@ textarea#entrada:focus { outline: 2px solid var(--primario); border-color: trans
     .optim-grid { grid-template-columns: 1fr; }
 }
 
+/* ---------- Código destino (dialectos) ---------- */
+.destino-item { margin-bottom: 14px; }
+.destino-item .salida { min-height: auto; }
+.destino-nota {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: #fcd34d;
+}
+
+
 /* ---------- Ayuda ---------- */
 .ayuda-grid {
     display: grid;

@@ -66,6 +66,49 @@ DELETE FROM clientes
 WHERE id = 10;
 ```
 
+### JOIN
+```txt
+obtener c.nombre, v.total desde clientes c unir ventas v en c.id = v.id_cliente donde v.total > 1000;
+```
+```sql
+SELECT c.nombre, v.total
+FROM clientes c
+JOIN ventas v ON c.id = v.id_cliente
+WHERE v.total > 1000;
+```
+
+### DISTINCT / GROUP BY / HAVING / agregación
+```txt
+obtener estado, contar(*) desde clientes agrupar por estado teniendo contar(*) > 5;
+```
+```sql
+SELECT estado, COUNT(*) FROM clientes GROUP BY estado HAVING COUNT(*) > 5;
+```
+
+### BETWEEN / IN / LIKE / IS NULL
+```txt
+obtener nombre desde clientes donde edad entre 18 y 30;
+obtener nombre desde clientes donde estado en ("activo", "pendiente");
+obtener nombre desde clientes donde nombre como "Juan%";
+obtener nombre desde clientes donde correo no es nulo;
+```
+```sql
+SELECT nombre FROM clientes WHERE edad BETWEEN 18 AND 30;
+SELECT nombre FROM clientes WHERE estado IN ('activo', 'pendiente');
+SELECT nombre FROM clientes WHERE nombre LIKE 'Juan%';
+SELECT nombre FROM clientes WHERE correo IS NOT NULL;
+```
+
+### ALTER / DROP TABLE
+```txt
+alterar tabla clientes agregar telefono texto;
+eliminar tabla clientes;
+```
+```sql
+ALTER TABLE clientes ADD telefono VARCHAR(255);
+DROP TABLE clientes;
+```
+
 ### CREATE TABLE
 ```txt
 crear tabla clientes {

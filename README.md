@@ -17,8 +17,19 @@ el resultado de cada fase del análisis (léxico, sintáctico, semántico y trad
 Demostrar de forma clara y educativa el flujo completo de un traductor:
 
 ```txt
-Entrada → Léxico (FLEX) → Sintáctico (BISON) → Semántico (C) → Generación SQL bruto → Optimización → SQL optimizado
+Entrada → Léxico (FLEX) → Sintáctico (BISON) → Semántico (C) → Generación SQL bruto → Optimización → Generador de código destino → SQL destino final
 ```
+
+### Funcionalidades soportadas
+
+- SELECT con **DISTINCT**, **JOIN** (alias y columnas calificadas), WHERE,
+  **GROUP BY**, **HAVING**, ORDER BY, LIMIT.
+- Funciones de agregación: `contar`, `sumar`, `promedio`, `minimo`, `maximo`.
+- Condiciones especiales: **BETWEEN**, **IN**, **LIKE**, **IS NULL / IS NOT NULL**.
+- INSERT, UPDATE, DELETE.
+- **CREATE TABLE** (llaves, natural o paréntesis), **ALTER TABLE**, **DROP TABLE**.
+- Optimizador (condiciones repetidas, OR→IN, contradicciones).
+- Generador de **código destino** por dialecto: SQL estándar, MySQL, PostgreSQL, SQL Server.
 
 ## 3. Tecnologías
 
@@ -36,8 +47,10 @@ Entrada → Léxico (FLEX) → Sintáctico (BISON) → Semántico (C) → Genera
 traductor-codigo
 ├── frontend/   index.html, styles.css, app.js
 ├── backend/    server.py
-├── src/        lexer.l, parser.y, ast.*, errores.*, semantica.*, generador.*, optimizador.*, main.c
-├── docs/       LENGUAJE, GRAMATICA, SEMANTICA, TRADUCCION, OPTIMIZACION, MANUAL_USUARIO
+├── src/        lexer.l, parser.y, ast.*, errores.*, semantica.*, generador.*,
+│               optimizador.*, generador_destino.*, main.c
+├── docs/       LENGUAJE, GRAMATICA, SEMANTICA, TRADUCCION, OPTIMIZACION,
+│               CODIGO_DESTINO, MANUAL_USUARIO
 ├── ejemplos/   select.cl, insert.cl, update.cl, delete.cl, create_table.cl
 ├── output/     salida.sql (generado)
 ├── Makefile

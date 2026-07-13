@@ -59,6 +59,30 @@ Acercar la sintaxis de las consultas a personas que hablan español, demostrando
 - Booleanos: `verdadero`, `falso`
 - Identificadores: `edad`, `nombre`
 
+## Palabras nuevas (ampliación)
+
+| ConsultaLang | SQL |
+|--------------|-----|
+| distinto | DISTINCT |
+| unir | JOIN (INNER) |
+| unir interna | INNER JOIN |
+| unir por izquierda | LEFT JOIN |
+| unir por derecha | RIGHT JOIN |
+| en (tras `unir`) | ON |
+| en (...) | IN (...) |
+| entre A y B | BETWEEN A AND B |
+| como | LIKE |
+| es nulo / no es nulo | IS NULL / IS NOT NULL |
+| agrupar por | GROUP BY |
+| teniendo | HAVING |
+| contar / sumar / promedio / minimo / maximo | COUNT / SUM / AVG / MIN / MAX |
+| clave primaria | PRIMARY KEY |
+| no nulo | NOT NULL |
+| alterar tabla ... agregar | ALTER TABLE ... ADD |
+| eliminar tabla | DROP TABLE |
+
+Columnas calificadas: `c.nombre`, `v.total` (alias de tabla con `desde clientes c`).
+
 ## Operadores
 
 `=`  `!=`  `<`  `>`  `<=`  `>=`

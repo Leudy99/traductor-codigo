@@ -19,6 +19,17 @@
                 <option value="update">UPDATE</option>
                 <option value="delete">DELETE</option>
                 <option value="create">CREATE TABLE</option>
+                <option value="join">JOIN (INNER)</option>
+                <option value="join_left">LEFT JOIN</option>
+                <option value="distinct">DISTINCT</option>
+                <option value="agrupar">GROUP BY + HAVING</option>
+                <option value="entre">BETWEEN</option>
+                <option value="in">IN</option>
+                <option value="like">LIKE</option>
+                <option value="isnull">IS NOT NULL</option>
+                <option value="crear_par">CREATE TABLE (paréntesis)</option>
+                <option value="alterar">ALTER TABLE</option>
+                <option value="drop">DROP TABLE</option>
                 <option value="opt_repetida">Optimizar: condición repetida</option>
                 <option value="opt_or_in">Optimizar: OR → IN</option>
                 <option value="opt_contra">Optimizar: contradicción</option>
@@ -88,6 +99,12 @@
             <ul id="lista-optim" class="mensajes"></ul>
         </section>
 
+        <!-- ============ Código destino final (todos los dialectos) ============ -->
+        <section class="card" id="seccion-destino" style="display:none;">
+            <div class="panel-titulo">Código destino final</div>
+            <div id="destino-lista"></div>
+        </section>
+
         <!-- ============ Ayuda de sintaxis ============ -->
         <section class="card ayuda">
             <div class="panel-titulo">Sintaxis aceptada</div>
@@ -96,12 +113,17 @@
                     <h4>Palabras equivalentes</h4>
                     <ul>
                         <li><code>obtener / seleccionar / listar / traer</code> → SELECT</li>
+                        <li><code>distinto</code> → DISTINCT</li>
                         <li><code>desde / de / en</code> → FROM</li>
                         <li><code>donde / cuando / con</code> → WHERE</li>
                         <li><code>y / o</code> → AND / OR</li>
                         <li><code>ordenar por</code> → ORDER BY</li>
                         <li><code>ascendente / descendente</code> → ASC / DESC</li>
                         <li><code>limite</code> → LIMIT</li>
+                        <li><code>unir … en …</code> → JOIN … ON …</li>
+                        <li><code>unir interna / por izquierda / por derecha</code> → INNER / LEFT / RIGHT JOIN</li>
+                        <li><code>agrupar por</code> → GROUP BY</li>
+                        <li><code>teniendo</code> → HAVING</li>
                     </ul>
                 </div>
                 <div>
@@ -112,6 +134,8 @@
                         <li><code>establecer / poner</code> → SET</li>
                         <li><code>eliminar / borrar</code> → DELETE</li>
                         <li><code>crear tabla</code> → CREATE TABLE</li>
+                        <li><code>alterar tabla … agregar</code> → ALTER TABLE … ADD</li>
+                        <li><code>eliminar tabla</code> → DROP TABLE</li>
                     </ul>
                 </div>
                 <div>
@@ -119,8 +143,21 @@
                     <ul>
                         <li><code>entero / texto / decimal / fecha / booleano</code></li>
                         <li><code>primario / obligatorio / unico</code></li>
+                        <li><code>clave primaria</code> → PRIMARY KEY</li>
+                        <li><code>no nulo</code> → NOT NULL</li>
                         <li><code>verdadero / falso</code> → TRUE / FALSE</li>
                         <li>Operadores: <code>= != &lt; &gt; &lt;= &gt;=</code></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Funciones y condiciones</h4>
+                    <ul>
+                        <li><code>contar / sumar / promedio / minimo / maximo</code> → COUNT / SUM / AVG / MIN / MAX</li>
+                        <li><code>entre A y B</code> → BETWEEN A AND B</li>
+                        <li><code>en ("a", "b")</code> → IN ('a', 'b')</li>
+                        <li><code>como "Juan%"</code> → LIKE 'Juan%'</li>
+                        <li><code>es nulo / no es nulo</code> → IS NULL / IS NOT NULL</li>
+                        <li>Columnas calificadas: <code>c.nombre</code></li>
                     </ul>
                 </div>
             </div>

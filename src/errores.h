@@ -29,6 +29,10 @@ typedef struct {
 
     char adv_optimizador[MAX_MSGS][MAX_LEN];
     int  nadv_optimizador;
+
+    /* Generador de codigo destino */
+    char adv_destino[MAX_MSGS][MAX_LEN];
+    int  nadv_destino;
 } Reporte;
 
 extern Reporte reporte;
@@ -38,5 +42,6 @@ void agregar_error(const char *fmt, ...);
 void agregar_advertencia(const char *fmt, ...);
 void agregar_optimizacion(const char *fmt, ...);
 void agregar_adv_optimizador(const char *fmt, ...);
+void agregar_adv_destino(const char *fmt, ...);
 
 #endif /* ERRORES_H */

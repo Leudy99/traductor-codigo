@@ -1,8 +1,10 @@
 /* ============================================================
  * parser.y - Analizador sintactico de ConsultaLang (BISON)
  * ------------------------------------------------------------
- * Define la gramatica del lenguaje y construye el AST.
- * Soporta: SELECT, INSERT, UPDATE, DELETE y CREATE TABLE.
+ * Gramatica del lenguaje. Construye el AST.
+ * Soporta: SELECT (con DISTINCT, JOIN, WHERE, GROUP BY, HAVING,
+ * ORDER BY, LIMIT, agregacion, BETWEEN, IN, LIKE, IS NULL),
+ * INSERT, UPDATE, DELETE, CREATE TABLE, ALTER TABLE, DROP TABLE.
  * ============================================================ */
 %{
 #include <stdio.h>
@@ -14,33 +16,41 @@
 int yylex(void);
 extern int yylineno;
 void yyerror(const char *s);
+
+/* Arma el nombre de una funcion de agregacion: "COUNT(*)", "SUM(total)" */
+static char *fn_agg(const char *fn, const char *arg) {
+    char buf[300];
+    snprintf(buf, sizeof(buf), "%s(%s)", fn, arg);
+    return cl_strdup(buf);
+}
 %}
 
-/* Mensajes de error detallados (indican que se esperaba) */
 %define parse.error verbose
 
-/* Valores semanticos posibles de tokens y reglas */
 %union {
     char    *str;
     int      num;
     struct Value   *val;
+    struct ValList *vlist;
     struct Cond    *cond;
     struct ColItem *col;
     struct Assign  *asg;
     struct ColDef  *cdef;
     struct OrderBy *ord;
+    struct Join    *join;
 }
 
-/* ----- Tokens con valor (con nombre legible para los errores) ----- */
+/* ----- Tokens con valor ----- */
 %token <str> IDENT  "identificador"
 %token <str> COMP   "operador de comparacion"
 %token <str> TIPO   "tipo de dato"
+%token <str> AGG    "funcion de agregacion"
 %token <val> INT     "numero entero"
 %token <val> DECIMAL "numero decimal"
 %token <val> STRING  "texto entre comillas"
 %token <val> BOOLVAL "valor booleano"
 
-/* ----- Palabras clave (con nombre legible) ----- */
+/* ----- Palabras clave ----- */
 %token SELECT_KW "obtener"
 %token ALL_KW    "todos"
 %token FROM_KW   "desde"
@@ -58,20 +68,40 @@ void yyerror(const char *s);
 %token SET_KW    "establecer"
 %token DELETE_KW "eliminar"
 %token CREAR     "crear"
+%token ALTERAR   "alterar"
+%token AGREGAR   "agregar"
 %token TABLA     "tabla"
 %token PRIMARIO  "primario"
 %token OBLIGATORIO "obligatorio"
 %token UNICO     "unico"
+%token DISTINCT_KW "distinto"
+%token AGRUPAR   "agrupar"
+%token TENIENDO  "teniendo"
+%token UNIR      "unir"
+%token INTERNA   "interna"
+%token IZQUIERDA "izquierda"
+%token DERECHA   "derecha"
+%token ENTRE     "entre"
+%token COMO      "como"
+%token ES        "es"
+%token NULO      "nulo"
+%token NO        "no"
+%token CLAVE     "clave"
+%token PRIMARIA  "primaria"
 
 /* ----- Tipos de las reglas ----- */
-%type <col>  col_list select_cols
-%type <cond> condicion comparacion opt_where
-%type <str>  op dir
+%type <col>  col_list select_cols col_item group_cols group_opt
+%type <cond> condicion predicado opt_where opt_having
+%type <str>  op operando dir tabla_alias tipo_join
 %type <val>  valor
+%type <vlist> inlist
+%type <join> join_list join_item
 %type <asg>  asignacion lista_asignaciones
 %type <ord>  opt_order
-%type <num>  opt_limit restriccion lista_restricciones
+%type <num>  opt_limit restriccion lista_restricciones distinct_opt
+%type <num>  restriccion_par lista_restricciones_par
 %type <cdef> coldef lista_coldefs coldef_nat lista_coldefs_nat
+%type <cdef> coldef_par lista_coldefs_par
 
 /* Precedencia: OR mas debil que AND */
 %left OR_KW
@@ -90,9 +120,10 @@ instruccion
     | update_stmt opt_pyc
     | delete_stmt opt_pyc
     | create_stmt opt_pyc
+    | alter_stmt  opt_pyc
+    | drop_stmt   opt_pyc
     ;
 
-/* El ';' final es opcional */
 opt_pyc
     : /* vacio */
     | ';'
@@ -100,23 +131,38 @@ opt_pyc
 
 /* ============ SELECT ============ */
 select_stmt
-    : SELECT_KW select_cols opt_from IDENT opt_where opt_order opt_limit
+    : SELECT_KW distinct_opt select_cols opt_from IDENT tabla_alias
+      join_list opt_where group_opt opt_having opt_order opt_limit
         {
             Stmt *s = nuevoStmt(ST_SELECT);
-            if ($2 == NULL) s->select_all = 1;   /* todos/todo */
-            else            s->columns = $2;
-            s->table = cl_strdup($4);
-            s->where = $5;
-            s->order = $6;
-            s->limit = $7;
+            s->distinct = $2;
+            if ($3 == NULL) s->select_all = 1;
+            else            s->columns = $3;
+            s->table = cl_strdup($5);
+            s->alias = $6;
+            s->joins = $7;
+            s->where = $8;
+            s->group_by = $9;
+            s->having = $10;
+            s->order = $11;
+            s->limit = $12;
             raiz = s;
         }
     ;
 
-/* 'desde/de/en' es opcional (forma natural: "muestra todos los clientes") */
+distinct_opt
+    : /* vacio */   { $$ = 0; }
+    | DISTINCT_KW   { $$ = 1; }
+    ;
+
 opt_from
     : /* vacio */
     | FROM_KW
+    ;
+
+tabla_alias
+    : /* vacio */   { $$ = NULL; }
+    | IDENT         { $$ = $1; }
     ;
 
 select_cols
@@ -125,23 +171,59 @@ select_cols
     ;
 
 col_list
-    : IDENT                 { $$ = nuevaColumna($1); }
-    | col_list ',' IDENT    { $$ = agregarColumna($1, nuevaColumna($3)); }
+    : col_item                  { $$ = $1; }
+    | col_list ',' col_item     { $$ = agregarColumna($1, $3); }
     ;
 
+col_item
+    : IDENT                     { $$ = nuevaColumna($1); }
+    | AGG '(' '*' ')'           { $$ = nuevaColumna(fn_agg($1, "*")); }
+    | AGG '(' IDENT ')'         { $$ = nuevaColumna(fn_agg($1, $3)); }
+    ;
+
+/* ---- JOIN ---- */
+join_list
+    : /* vacio */               { $$ = NULL; }
+    | join_list join_item       { $$ = agregarJoin($1, $2); }
+    ;
+
+join_item
+    : UNIR tipo_join IDENT tabla_alias FROM_KW condicion
+        { $$ = nuevoJoin($2, $3, $4, $6); }
+    ;
+
+tipo_join
+    : /* vacio */       { $$ = cl_strdup("JOIN"); }        /* INNER por defecto */
+    | INTERNA           { $$ = cl_strdup("INNER JOIN"); }
+    | POR IZQUIERDA     { $$ = cl_strdup("LEFT JOIN"); }
+    | POR DERECHA       { $$ = cl_strdup("RIGHT JOIN"); }
+    ;
+
+/* ---- WHERE ---- */
 opt_where
     : /* vacio */               { $$ = NULL; }
     | WHERE_KW condicion        { $$ = $2; }
     ;
 
 condicion
-    : comparacion                       { $$ = $1; }
+    : predicado                         { $$ = $1; }
     | condicion AND_KW condicion        { $$ = nuevaLogica(C_AND, $1, $3); }
     | condicion OR_KW condicion         { $$ = nuevaLogica(C_OR, $1, $3); }
     ;
 
-comparacion
-    : IDENT op valor    { $$ = nuevaComparacion($1, $2, $3); }
+predicado
+    : operando op valor                     { $$ = nuevaComparacion($1, $2, $3); }
+    | operando ENTRE valor AND_KW valor     { $$ = nuevoBetween($1, $3, $5); }
+    | operando FROM_KW '(' inlist ')'       { $$ = nuevoIn($1, $4); }
+    | operando COMO valor                   { $$ = nuevoLike($1, $3); }
+    | operando ES NULO                      { $$ = nuevoIsNull($1, 0); }
+    | operando NO ES NULO                   { $$ = nuevoIsNull($1, 1); }
+    ;
+
+operando
+    : IDENT                 { $$ = $1; }
+    | AGG '(' '*' ')'       { $$ = fn_agg($1, "*"); }
+    | AGG '(' IDENT ')'     { $$ = fn_agg($1, $3); }
     ;
 
 op
@@ -157,17 +239,41 @@ valor
     | IDENT     { $$ = nuevoValue(V_IDENT, $1); }
     ;
 
+inlist
+    : valor                 { $$ = nuevoValList($1); }
+    | inlist ',' valor      { $$ = agregarValList($1, $3); }
+    ;
+
+/* ---- GROUP BY ---- */
+group_opt
+    : /* vacio */                   { $$ = NULL; }
+    | AGRUPAR POR group_cols        { $$ = $3; }
+    ;
+
+group_cols
+    : IDENT                     { $$ = nuevaColumna($1); }
+    | group_cols ',' IDENT      { $$ = agregarColumna($1, nuevaColumna($3)); }
+    ;
+
+/* ---- HAVING ---- */
+opt_having
+    : /* vacio */               { $$ = NULL; }
+    | TENIENDO condicion        { $$ = $2; }
+    ;
+
+/* ---- ORDER BY ---- */
 opt_order
     : /* vacio */                       { $$ = NULL; }
     | ORDER_KW POR IDENT dir            { $$ = nuevoOrden($3, $4); }
     ;
 
 dir
-    : /* vacio */   { $$ = cl_strdup("ASC"); }   /* ascendente por defecto */
+    : /* vacio */   { $$ = cl_strdup("ASC"); }
     | ASC_KW        { $$ = cl_strdup("ASC"); }
     | DESC_KW       { $$ = cl_strdup("DESC"); }
     ;
 
+/* ---- LIMIT ---- */
 opt_limit
     : /* vacio */       { $$ = -1; }
     | LIMIT_KW INT      { $$ = atoi($2->text); }
@@ -185,8 +291,8 @@ insert_stmt
     ;
 
 prep
-    : FROM_KW       /* en / de / desde */
-    | A_PREP        /* a */
+    : FROM_KW
+    | A_PREP
     ;
 
 lista_asignaciones
@@ -221,50 +327,50 @@ delete_stmt
         }
     ;
 
-/* ============ CREATE TABLE ============ */
-create_stmt
-    /* Forma con llaves: crear tabla X { col tipo; ... } */
-    : CREAR TABLA IDENT '{' lista_coldefs '}'
+/* ============ DROP TABLE ============ */
+drop_stmt
+    : DELETE_KW TABLA IDENT
         {
-            Stmt *s = nuevoStmt(ST_CREATE);
+            Stmt *s = nuevoStmt(ST_DROP);
             s->table = cl_strdup($3);
-            s->coldefs = $5;
-            raiz = s;
-        }
-    /* Forma natural: crea la tabla X con los campos col tipo, col tipo, ... */
-    | CREAR TABLA IDENT opt_conector lista_coldefs_nat
-        {
-            Stmt *s = nuevoStmt(ST_CREATE);
-            s->table = cl_strdup($3);
-            s->coldefs = $5;
             raiz = s;
         }
     ;
 
-/* Conector opcional antes de los campos ("con", "de") */
+/* ============ ALTER TABLE ============ */
+alter_stmt
+    : ALTERAR TABLA IDENT AGREGAR IDENT TIPO
+        {
+            Stmt *s = nuevoStmt(ST_ALTER);
+            s->table = cl_strdup($3);
+            s->coldefs = nuevaColDef($5, $6);
+            raiz = s;
+        }
+    ;
+
+/* ============ CREATE TABLE ============ */
+create_stmt
+    /* Forma con llaves: crear tabla X { col tipo; ... } */
+    : CREAR TABLA IDENT '{' lista_coldefs '}'
+        { Stmt *s = nuevoStmt(ST_CREATE); s->table = cl_strdup($3);
+          s->coldefs = $5; raiz = s; }
+    /* Forma natural: crea la tabla X con los campos col tipo, ... */
+    | CREAR TABLA IDENT opt_conector lista_coldefs_nat
+        { Stmt *s = nuevoStmt(ST_CREATE); s->table = cl_strdup($3);
+          s->coldefs = $5; raiz = s; }
+    /* Forma con parentesis: crear tabla X ( col tipo clave primaria, ... ) */
+    | CREAR TABLA IDENT '(' lista_coldefs_par ')'
+        { Stmt *s = nuevoStmt(ST_CREATE); s->table = cl_strdup($3);
+          s->coldefs = $5; raiz = s; }
+    ;
+
 opt_conector
     : /* vacio */
     | WHERE_KW      /* con */
     | FROM_KW       /* de / en */
     ;
 
-/* Campos separados por coma, sin llaves ni ';' */
-lista_coldefs_nat
-    : coldef_nat                        { $$ = $1; }
-    | lista_coldefs_nat ',' coldef_nat  { $$ = agregarColDef($1, $3); }
-    ;
-
-coldef_nat
-    : IDENT TIPO lista_restricciones
-        {
-            ColDef *c = nuevaColDef($1, $2);
-            c->primary = ($3 & 1) ? 1 : 0;
-            c->notnull = ($3 & 2) ? 1 : 0;
-            c->unique  = ($3 & 4) ? 1 : 0;
-            $$ = c;
-        }
-    ;
-
+/* --- forma con llaves --- */
 lista_coldefs
     : coldef                    { $$ = $1; }
     | lista_coldefs coldef      { $$ = agregarColDef($1, $2); }
@@ -287,14 +393,60 @@ lista_restricciones
     ;
 
 restriccion
-    : PRIMARIO      { $$ = 1; }   /* PRIMARY KEY */
-    | OBLIGATORIO   { $$ = 2; }   /* NOT NULL    */
-    | UNICO         { $$ = 4; }   /* UNIQUE      */
+    : PRIMARIO      { $$ = 1; }
+    | OBLIGATORIO   { $$ = 2; }
+    | UNICO         { $$ = 4; }
+    ;
+
+/* --- forma natural (comas) --- */
+lista_coldefs_nat
+    : coldef_nat                        { $$ = $1; }
+    | lista_coldefs_nat ',' coldef_nat  { $$ = agregarColDef($1, $3); }
+    ;
+
+coldef_nat
+    : IDENT TIPO lista_restricciones
+        {
+            ColDef *c = nuevaColDef($1, $2);
+            c->primary = ($3 & 1) ? 1 : 0;
+            c->notnull = ($3 & 2) ? 1 : 0;
+            c->unique  = ($3 & 4) ? 1 : 0;
+            $$ = c;
+        }
+    ;
+
+/* --- forma con parentesis --- */
+lista_coldefs_par
+    : coldef_par                        { $$ = $1; }
+    | lista_coldefs_par ',' coldef_par  { $$ = agregarColDef($1, $3); }
+    ;
+
+coldef_par
+    : IDENT TIPO lista_restricciones_par
+        {
+            ColDef *c = nuevaColDef($1, $2);
+            c->primary = ($3 & 1) ? 1 : 0;
+            c->notnull = ($3 & 2) ? 1 : 0;
+            c->unique  = ($3 & 4) ? 1 : 0;
+            $$ = c;
+        }
+    ;
+
+lista_restricciones_par
+    : /* vacio */                               { $$ = 0; }
+    | lista_restricciones_par restriccion_par   { $$ = $1 | $2; }
+    ;
+
+restriccion_par
+    : CLAVE PRIMARIA    { $$ = 1; }   /* PRIMARY KEY */
+    | NO NULO           { $$ = 2; }   /* NOT NULL    */
+    | UNICO             { $$ = 4; }   /* UNIQUE      */
+    | PRIMARIO          { $$ = 1; }
+    | OBLIGATORIO       { $$ = 2; }
     ;
 
 %%
 
-/* Manejo de errores sintacticos */
 /* Reemplaza todas las apariciones de 'a' por 'b' (src -> dst) */
 static void reemplazar(char *dst, size_t n, const char *src,
                        const char *a, const char *b) {
@@ -312,11 +464,8 @@ static void reemplazar(char *dst, size_t n, const char *src,
 }
 
 void yyerror(const char *s) {
-    /* Si ya hubo error lexico, no duplicamos el mensaje sintactico */
     if (reporte.lexico == 0) return;
     reporte.sintactico = 0;
-
-    /* Traduce las frases que genera BISON al espanol */
     char a[MAX_LEN], b[MAX_LEN];
     reemplazar(a, sizeof(a), s, "syntax error", "error de sintaxis");
     reemplazar(b, sizeof(b), a, ", unexpected", "; no se esperaba");
@@ -324,6 +473,5 @@ void yyerror(const char *s) {
     reemplazar(b, sizeof(b), a, " or ", " o ");
     reemplazar(a, sizeof(a), b, "$end", "el final de la instruccion");
     reemplazar(b, sizeof(b), a, "end of file", "el final de la instruccion");
-
     agregar_error("Error sintactico en linea %d: %s", yylineno, b);
 }

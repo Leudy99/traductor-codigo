@@ -68,14 +68,41 @@ IDCHAR   [A-Za-z0-9_\x80-\xff]
  /* ----- LIMIT ----- */
 "limite"                 { return LIMIT_KW; }
 
+ /* ----- DISTINCT / GROUP BY / HAVING ----- */
+"distinto"|"distintos"   { return DISTINCT_KW; }
+"agrupar"                { return AGRUPAR; }
+"teniendo"               { return TENIENDO; }
+
+ /* ----- JOIN ----- */
+"unir"                   { return UNIR; }
+"interna"                { return INTERNA; }
+"izquierda"              { return IZQUIERDA; }
+"derecha"                { return DERECHA; }
+
+ /* ----- Funciones de agregacion (se traducen a SQL) ----- */
+"contar"     { yylval.str = cl_strdup("COUNT"); return AGG; }
+"sumar"      { yylval.str = cl_strdup("SUM");   return AGG; }
+"promedio"   { yylval.str = cl_strdup("AVG");   return AGG; }
+"minimo"     { yylval.str = cl_strdup("MIN");   return AGG; }
+"maximo"     { yylval.str = cl_strdup("MAX");   return AGG; }
+
+ /* ----- Condiciones especiales ----- */
+"entre"      { return ENTRE; }
+"como"       { return COMO; }
+"es"         { return ES; }
+"nulo"       { return NULO; }
+"no"         { return NO; }
+
  /* ----- INSERT / UPDATE / DELETE ----- */
-"insertar"|"agregar"|"inserta"|"agrega"|"anade"|"a\xC3\xB1ade"   { return INSERT_KW; }
+"insertar"|"inserta"|"agrega"|"anade"|"a\xC3\xB1ade"   { return INSERT_KW; }
 "actualizar"|"modificar"|"actualiza"|"modifica"|"cambia"         { return UPDATE_KW; }
 "establecer"|"poner"|"poniendo"|"estableciendo"                  { return SET_KW; }
 "eliminar"|"borrar"|"elimina"|"borra"|"quita"                    { return DELETE_KW; }
 
- /* ----- CREATE TABLE ----- */
+ /* ----- DDL: CREATE / ALTER / DROP TABLE ----- */
 "crear"|"crea"|"definir"|"define"   { return CREAR; }
+"alterar"|"altera"                  { return ALTERAR; }
+"agregar"                           { return AGREGAR; }
 "tabla"                             { return TABLA; }
 
  /* ----- Tipos de datos (traducidos a SQL) ----- */
@@ -86,6 +113,8 @@ IDCHAR   [A-Za-z0-9_\x80-\xff]
 "booleano"   { yylval.str = cl_strdup("BOOLEAN");       return TIPO; }
 
  /* ----- Restricciones de columna ----- */
+"clave"        { return CLAVE; }
+"primaria"     { return PRIMARIA; }
 "primario"     { return PRIMARIO; }
 "obligatorio"  { return OBLIGATORIO; }
 "unico"        { return UNICO; }
@@ -107,6 +136,9 @@ IDCHAR   [A-Za-z0-9_\x80-\xff]
 ";"   { return ';'; }
 "{"   { return '{'; }
 "}"   { return '}'; }
+"("   { return '('; }
+")"   { return ')'; }
+"*"   { return '*'; }
 
  /* ----- Valores numericos ----- */
 {DIGITO}+"."{DIGITO}+    { yylval.val = nuevoValue(V_DECIMAL, yytext); return DECIMAL; }
@@ -120,8 +152,8 @@ IDCHAR   [A-Za-z0-9_\x80-\xff]
                             return STRING;
                          }
 
- /* ----- Identificadores ----- */
-{LETRA}{IDCHAR}*         { yylval.str = cl_strdup(yytext); return IDENT; }
+ /* ----- Identificadores (admite calificados: c.nombre) ----- */
+{LETRA}{IDCHAR}*("."{LETRA}{IDCHAR}*)?   { yylval.str = cl_strdup(yytext); return IDENT; }
 
  /* ----- Cualquier otro simbolo: error lexico ----- */
 .                        {

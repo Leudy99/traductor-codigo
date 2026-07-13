@@ -17,6 +17,7 @@
 #include "semantica.h"
 #include "generador.h"
 #include "optimizador.h"
+#include "generador_destino.h"
 
 extern int yyparse(void);
 extern FILE *yyin;
@@ -101,7 +102,7 @@ int main(int argc, char **argv) {
             sql = generar_sql(raiz);          /* SQL bruto */
             sql_opt = optimizar_sql(sql);     /* fase de optimizacion */
             reporte.traduccion = 1;
-            guardar_sql(sql_opt);             /* se guarda el optimizado */
+            guardar_sql(sql_opt);             /* se guarda el SQL optimizado */
         } else {
             reporte.semantico = 0;
             reporte.traduccion = -1;
@@ -149,6 +150,28 @@ int main(int argc, char **argv) {
 
     fputs("\"advertencias_optimizador\":", out);
     json_array(out, reporte.adv_optimizador, reporte.nadv_optimizador);
+    fputs(",", out);
+
+    /* Codigo destino final: los 4 dialectos a la vez */
+    fputs("\"codigo_destino\":[", out);
+    if (sql_opt) {
+        const char *dialectos[] = {"estandar", "mysql", "postgresql", "sqlserver"};
+        for (int i = 0; i < 4; i++) {
+            if (i) fputs(",", out);
+            reporte.nadv_destino = 0;                 /* advertencias de este dialecto */
+            char *d = generar_codigo_destino(sql_opt, dialectos[i]);
+            fputs("{", out);
+            fprintf(out, "\"dialecto\":\"%s\",", dialecto_nombre(dialectos[i]));
+            fputs("\"sql\":", out);
+            json_str(out, d ? d : "");
+            fputs(",", out);
+            fputs("\"advertencias\":", out);
+            json_array(out, reporte.adv_destino, reporte.nadv_destino);
+            fputs("}", out);
+            if (d) free(d);
+        }
+    }
+    fputs("]", out);
 
     fputs("}\n", out);
 

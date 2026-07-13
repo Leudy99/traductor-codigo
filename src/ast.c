@@ -65,6 +65,71 @@ Cond *nuevaLogica(CondType type, Cond *left, Cond *right) {
     return c;
 }
 
+ValList *nuevoValList(Value *v) {
+    ValList *l = (ValList *)calloc(1, sizeof(ValList));
+    l->val = v;
+    return l;
+}
+
+ValList *agregarValList(ValList *lista, Value *v) {
+    ValList *nuevo = nuevoValList(v);
+    if (!lista) return nuevo;
+    ValList *p = lista;
+    while (p->next) p = p->next;
+    p->next = nuevo;
+    return lista;
+}
+
+Cond *nuevoBetween(const char *col, Value *v1, Value *v2) {
+    Cond *c = (Cond *)calloc(1, sizeof(Cond));
+    c->type = C_BETWEEN;
+    c->col = cl_strdup(col);
+    c->val = v1;
+    c->val2 = v2;
+    return c;
+}
+
+Cond *nuevoIn(const char *col, ValList *lista) {
+    Cond *c = (Cond *)calloc(1, sizeof(Cond));
+    c->type = C_IN;
+    c->col = cl_strdup(col);
+    c->inlist = lista;
+    return c;
+}
+
+Cond *nuevoLike(const char *col, Value *val) {
+    Cond *c = (Cond *)calloc(1, sizeof(Cond));
+    c->type = C_LIKE;
+    c->col = cl_strdup(col);
+    c->op = cl_strdup("LIKE");
+    c->val = val;
+    return c;
+}
+
+Cond *nuevoIsNull(const char *col, int negado) {
+    Cond *c = (Cond *)calloc(1, sizeof(Cond));
+    c->type = negado ? C_ISNOTNULL : C_ISNULL;
+    c->col = cl_strdup(col);
+    return c;
+}
+
+Join *nuevoJoin(const char *tipo, const char *table, const char *alias, Cond *on) {
+    Join *j = (Join *)calloc(1, sizeof(Join));
+    j->tipo = cl_strdup(tipo);
+    j->table = cl_strdup(table);
+    j->alias = alias ? cl_strdup(alias) : NULL;
+    j->on = on;
+    return j;
+}
+
+Join *agregarJoin(Join *lista, Join *nuevo) {
+    if (!lista) return nuevo;
+    Join *p = lista;
+    while (p->next) p = p->next;
+    p->next = nuevo;
+    return lista;
+}
+
 Assign *nuevaAsignacion(const char *col, Value *val) {
     Assign *a = (Assign *)calloc(1, sizeof(Assign));
     a->col = cl_strdup(col);

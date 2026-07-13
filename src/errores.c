@@ -16,6 +16,7 @@ void reporte_init(void) {
     reporte.nadvertencias = 0;
     reporte.noptimizaciones = 0;
     reporte.nadv_optimizador = 0;
+    reporte.nadv_destino = 0;
 }
 
 void agregar_error(const char *fmt, ...) {
@@ -52,4 +53,13 @@ void agregar_adv_optimizador(const char *fmt, ...) {
     vsnprintf(reporte.adv_optimizador[reporte.nadv_optimizador], MAX_LEN, fmt, ap);
     va_end(ap);
     reporte.nadv_optimizador++;
+}
+
+void agregar_adv_destino(const char *fmt, ...) {
+    if (reporte.nadv_destino >= MAX_MSGS) return;
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(reporte.adv_destino[reporte.nadv_destino], MAX_LEN, fmt, ap);
+    va_end(ap);
+    reporte.nadv_destino++;
 }
