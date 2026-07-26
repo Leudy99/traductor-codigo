@@ -1,6 +1,9 @@
 # ConsultaLang Web Translator
 
-Traductor web que convierte instrucciones escritas en **español** (ConsultaLang) a **SQL estándar**, usando las fases clásicas de un compilador.
+**Minicompilador** (transpilador fuente-a-fuente) que traduce instrucciones escritas
+en **español** (ConsultaLang) a **SQL**, implementando las fases clásicas de un
+compilador: análisis léxico, sintáctico y semántico, tabla de símbolos, código
+intermedio, optimización y generación de código destino.
 
 Proyecto de la asignatura de **Compiladores**.
 
@@ -9,12 +12,19 @@ Proyecto de la asignatura de **Compiladores**.
 ## 1. Descripción
 
 ConsultaLang es un lenguaje de consulta en español. El usuario escribe una instrucción como
-`obtener nombre desde clientes donde edad >= 18;` y el sistema la traduce a SQL, mostrando además
-el resultado de cada fase del análisis (léxico, sintáctico, semántico y traducción).
+`obtener nombre desde clientes donde edad >= 18;` y el **minicompilador** la procesa a
+través de todas sus fases y produce SQL, mostrando en cada paso los tokens, el estado
+de cada análisis, la tabla de símbolos, el código intermedio, el código optimizado y
+el código destino.
+
+Es un **compilador fuente-a-fuente**: el lenguaje fuente es ConsultaLang y el lenguaje
+destino es SQL. Aunque el destino es otro lenguaje de alto nivel (no código máquina),
+recorre las mismas etapas que un compilador tradicional, por lo que sirve como
+minicompilador didáctico para la asignatura.
 
 ## 2. Objetivo
 
-Demostrar de forma clara y educativa el flujo completo de un traductor:
+Demostrar de forma clara y educativa el flujo completo de un minicompilador:
 
 ```txt
 Entrada → Léxico (FLEX) → Sintáctico (BISON) → Semántico (C) → Generación SQL bruto → Optimización → Generador de código destino → SQL destino final
@@ -145,5 +155,8 @@ LIMIT 10;
 
 ## 12. Conclusión
 
-El proyecto integra las fases de un traductor (léxico, sintáctico, semántico y generación de código)
-con una interfaz web moderna, cumpliendo el objetivo educativo de la asignatura de Compiladores.
+El proyecto es un **minicompilador** (transpilador) completo: integra todas las fases
+de un compilador —análisis léxico, sintáctico y semántico, tabla de símbolos, código
+intermedio, optimización y generación de código destino— sobre un lenguaje fuente
+propio (ConsultaLang) y un lenguaje destino (SQL, en cuatro dialectos). La interfaz web
+hace visible cada fase, cumpliendo el objetivo educativo de la asignatura de Compiladores.
