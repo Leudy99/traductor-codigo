@@ -63,6 +63,10 @@ const $sqlOptim    = document.getElementById("sql-optim");
 const $listaOptim  = document.getElementById("lista-optim");
 const $seccionDest = document.getElementById("seccion-destino");
 const $destLista   = document.getElementById("destino-lista");
+const $seccionTok  = document.getElementById("seccion-tokens");
+const $tbodyTok    = document.querySelector("#tabla-tokens tbody");
+const $seccionSim  = document.getElementById("seccion-simbolos");
+const $tbodySim    = document.querySelector("#tabla-simbolos tbody");
 
 const FASES = ["lexico", "sintactico", "semantico", "traduccion"];
 
@@ -167,6 +171,44 @@ function pintarDestino(data) {
     });
 }
 
+// ----- Tabla de tokens (análisis léxico) -----
+function pintarTokens(data) {
+    const tokens = data.tokens || [];
+    if (tokens.length === 0) { $seccionTok.style.display = "none"; return; }
+    $seccionTok.style.display = "block";
+    $tbodyTok.innerHTML = "";
+    tokens.forEach((t) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+            `<td>${t.n}</td><td>${t.tipo}</td>` +
+            `<td><code>${escapar(t.lexema)}</code></td>` +
+            `<td>${t.linea}</td><td>${t.columna}</td>`;
+        $tbodyTok.appendChild(tr);
+    });
+}
+
+// ----- Tabla de símbolos (dinámica) -----
+function pintarSimbolos(data) {
+    const filas = data.tabla_simbolos || [];
+    if (filas.length === 0) { $seccionSim.style.display = "none"; return; }
+    $seccionSim.style.display = "block";
+    $tbodySim.innerHTML = "";
+    filas.forEach((s) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+            `<td><code>${escapar(s.simbolo)}</code></td>` +
+            `<td>${s.categoria}</td><td>${s.tipo}</td>` +
+            `<td>${escapar(s.ambito)}</td><td>${escapar(s.info)}</td>`;
+        $tbodySim.appendChild(tr);
+    });
+}
+
+// Escapa texto para insertar en HTML
+function escapar(t) {
+    return String(t)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 // ----- Llama al backend y traduce -----
 async function traducir() {
     const code = $entrada.value;
@@ -200,6 +242,10 @@ async function traducir() {
 
         // Código destino
         pintarDestino(data);
+
+        // Tablas de tokens y símbolos
+        pintarTokens(data);
+        pintarSimbolos(data);
     } catch (err) {
         $salida.textContent = "Error de conexión con el servidor.";
         FASES.forEach((f) => pintarEstado(f, "error"));
@@ -215,6 +261,8 @@ function limpiar() {
     pintarMensajes([], []);
     $seccionOpt.style.display = "none";
     $seccionDest.style.display = "none";
+    $seccionTok.style.display = "none";
+    $seccionSim.style.display = "none";
     $ejemplos.value = "";
 }
 

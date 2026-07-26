@@ -46,6 +46,8 @@ def respuesta_error(mensaje):
         "optimizaciones_aplicadas": [],
         "advertencias_optimizador": [],
         "codigo_destino": [],
+        "tokens": [],
+        "tabla_simbolos": [],
     }
 
 

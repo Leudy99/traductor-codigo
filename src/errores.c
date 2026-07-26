@@ -17,6 +17,8 @@ void reporte_init(void) {
     reporte.noptimizaciones = 0;
     reporte.nadv_optimizador = 0;
     reporte.nadv_destino = 0;
+    reporte.ntokens = 0;
+    reporte.nsim = 0;
 }
 
 void agregar_error(const char *fmt, ...) {
@@ -62,4 +64,14 @@ void agregar_adv_destino(const char *fmt, ...) {
     vsnprintf(reporte.adv_destino[reporte.nadv_destino], MAX_LEN, fmt, ap);
     va_end(ap);
     reporte.nadv_destino++;
+}
+
+void agregar_token(const char *tipo, const char *lexema, int linea, int columna) {
+    if (reporte.ntokens >= MAX_MSGS) return;
+    int i = reporte.ntokens;
+    snprintf(reporte.tok_tipo[i], 32, "%s", tipo);
+    snprintf(reporte.tok_lex[i], 128, "%s", lexema);
+    reporte.tok_lin[i] = linea;
+    reporte.tok_col[i] = columna;
+    reporte.ntokens++;
 }

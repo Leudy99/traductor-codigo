@@ -83,12 +83,25 @@
             <ul id="lista-mensajes" class="mensajes"></ul>
         </section>
 
+        <!-- ============ Tabla de tokens (análisis léxico) ============ -->
+        <section class="card" id="seccion-tokens" style="display:none;">
+            <div class="panel-titulo">Tabla de tokens (análisis léxico)</div>
+            <div class="tabla-scroll">
+                <table class="tabla" id="tabla-tokens">
+                    <thead>
+                        <tr><th>#</th><th>Tipo</th><th>Lexema</th><th>Línea</th><th>Columna</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
         <!-- ============ Optimización de código ============ -->
         <section class="card" id="seccion-optim" style="display:none;">
             <div class="panel-titulo">Optimización de código</div>
             <div class="optim-grid">
                 <div>
-                    <div class="sub-titulo">SQL bruto (antes)</div>
+                    <div class="sub-titulo">Código intermedio (SQL bruto)</div>
                     <pre id="sql-bruto" class="salida"></pre>
                 </div>
                 <div>
@@ -97,6 +110,19 @@
                 </div>
             </div>
             <ul id="lista-optim" class="mensajes"></ul>
+        </section>
+
+        <!-- ============ Tabla de símbolos (dinámica) ============ -->
+        <section class="card" id="seccion-simbolos" style="display:none;">
+            <div class="panel-titulo">Tabla de símbolos</div>
+            <div class="tabla-scroll">
+                <table class="tabla" id="tabla-simbolos">
+                    <thead>
+                        <tr><th>Símbolo</th><th>Categoría</th><th>Tipo/Clase</th><th>Ámbito/Tabla</th><th>Información</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </section>
 
         <!-- ============ Código destino final (todos los dialectos) ============ -->

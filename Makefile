@@ -15,7 +15,7 @@ BIN     = consultalang
 # Fuentes en C del proyecto (sin contar los generados)
 FUENTES = $(SRC)/ast.c $(SRC)/errores.c $(SRC)/semantica.c \
           $(SRC)/generador.c $(SRC)/optimizador.c \
-          $(SRC)/generador_destino.c $(SRC)/main.c
+          $(SRC)/generador_destino.c $(SRC)/tabla_simbolos.c $(SRC)/main.c
 
 # Archivos generados por bison/flex
 GEN     = $(SRC)/parser.tab.c $(SRC)/parser.tab.h $(SRC)/lex.yy.c

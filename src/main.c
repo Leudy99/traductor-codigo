@@ -18,6 +18,7 @@
 #include "generador.h"
 #include "optimizador.h"
 #include "generador_destino.h"
+#include "tabla_simbolos.h"
 
 extern int yyparse(void);
 extern FILE *yyin;
@@ -99,7 +100,8 @@ int main(int argc, char **argv) {
         int sem = analizar_semantica(raiz);
         if (sem == 0) {
             reporte.semantico = 1;
-            sql = generar_sql(raiz);          /* SQL bruto */
+            construir_tabla_simbolos(raiz);   /* tabla de simbolos dinamica */
+            sql = generar_sql(raiz);          /* SQL bruto (codigo intermedio) */
             sql_opt = optimizar_sql(sql);     /* fase de optimizacion */
             reporte.traduccion = 1;
             guardar_sql(sql_opt);             /* se guarda el SQL optimizado */
@@ -170,6 +172,36 @@ int main(int argc, char **argv) {
             fputs("}", out);
             if (d) free(d);
         }
+    }
+    fputs("]", out);
+    fputs(",", out);
+
+    /* Tabla de tokens (analisis lexico) */
+    fputs("\"tokens\":[", out);
+    for (int i = 0; i < reporte.ntokens; i++) {
+        if (i) fputs(",", out);
+        fputs("{", out);
+        fprintf(out, "\"n\":%d,", i + 1);
+        fputs("\"tipo\":", out);   json_str(out, reporte.tok_tipo[i]);  fputs(",", out);
+        fputs("\"lexema\":", out); json_str(out, reporte.tok_lex[i]);   fputs(",", out);
+        fprintf(out, "\"linea\":%d,", reporte.tok_lin[i]);
+        fprintf(out, "\"columna\":%d", reporte.tok_col[i]);
+        fputs("}", out);
+    }
+    fputs("]", out);
+    fputs(",", out);
+
+    /* Tabla de simbolos (dinamica) */
+    fputs("\"tabla_simbolos\":[", out);
+    for (int i = 0; i < reporte.nsim; i++) {
+        if (i) fputs(",", out);
+        fputs("{", out);
+        fputs("\"simbolo\":", out);   json_str(out, reporte.s_nombre[i]);    fputs(",", out);
+        fputs("\"categoria\":", out); json_str(out, reporte.s_categoria[i]); fputs(",", out);
+        fputs("\"tipo\":", out);      json_str(out, reporte.s_tipo[i]);      fputs(",", out);
+        fputs("\"ambito\":", out);    json_str(out, reporte.s_ambito[i]);    fputs(",", out);
+        fputs("\"info\":", out);      json_str(out, reporte.s_info[i]);
+        fputs("}", out);
     }
     fputs("]", out);
 

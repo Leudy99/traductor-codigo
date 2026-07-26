@@ -20,6 +20,24 @@ Demostrar de forma clara y educativa el flujo completo de un traductor:
 Entrada → Léxico (FLEX) → Sintáctico (BISON) → Semántico (C) → Generación SQL bruto → Optimización → Generador de código destino → SQL destino final
 ```
 
+Además del SQL, la interfaz muestra la **tabla de tokens** (análisis léxico) y la
+**tabla de símbolos dinámica** (generada según la instrucción escrita).
+
+### Fases del compilador (cumplimiento académico)
+
+| Fase | Implementación |
+|------|----------------|
+| Análisis léxico | `src/lexer.l` (FLEX) + tabla de tokens |
+| Análisis sintáctico | `src/parser.y` (BISON) + AST |
+| Análisis semántico | `src/semantica.c` |
+| Tabla de símbolos | `src/tabla_simbolos.c` (dinámica) |
+| Código intermedio | SQL bruto (`src/generador.c`) |
+| Optimización | `src/optimizador.c` |
+| Código destino | `src/generador_destino.c` (4 dialectos) |
+
+**Lenguaje fuente:** ConsultaLang.
+**Lenguaje destino:** SQL (variantes SQL estándar, MySQL, PostgreSQL y SQL Server).
+
 ### Funcionalidades soportadas
 
 - SELECT con **DISTINCT**, **JOIN** (alias y columnas calificadas), WHERE,
@@ -48,9 +66,9 @@ traductor-codigo
 ├── frontend/   index.html, styles.css, app.js
 ├── backend/    server.py
 ├── src/        lexer.l, parser.y, ast.*, errores.*, semantica.*, generador.*,
-│               optimizador.*, generador_destino.*, main.c
+│               optimizador.*, generador_destino.*, tabla_simbolos.*, main.c
 ├── docs/       LENGUAJE, GRAMATICA, SEMANTICA, TRADUCCION, OPTIMIZACION,
-│               CODIGO_DESTINO, MANUAL_USUARIO
+│               CODIGO_DESTINO, TABLA_SIMBOLOS, MANUAL_USUARIO
 ├── ejemplos/   select.cl, insert.cl, update.cl, delete.cl, create_table.cl
 ├── output/     salida.sql (generado)
 ├── Makefile
